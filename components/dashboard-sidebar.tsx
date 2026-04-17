@@ -3,6 +3,7 @@
 import { useState } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
+import { useUser } from "@clerk/nextjs"
 import { motion, AnimatePresence } from "framer-motion"
 import { cn } from "@/lib/utils"
 import { useCrisis } from "@/lib/crisis-context"
@@ -19,13 +20,14 @@ import {
   Settings,
   ChevronLeft,
   ChevronRight,
-  Zap
+  Zap,
+  Lock
 } from "lucide-react"
 
 interface NavItem {
   label: string
   href: string
-  icon: React.ElementType
+  icon: React.ElementType<{ className?: string }>
   badge?: string
 }
 
@@ -51,7 +53,10 @@ const benefactorNav: NavItem[] = [
 export function DashboardSidebar({ role }: { role: "frontline" | "command" | "benefactor" }) {
   const [isCollapsed, setIsCollapsed] = useState(false)
   const pathname = usePathname()
+  const { user } = useUser()
   const { isCrisisMode, toggleCrisisMode } = useCrisis()
+  
+  const userRole = user?.unsafeMetadata?.role as string | undefined
 
   const navItems = role === "frontline" 
     ? frontlineNav 
@@ -66,6 +71,12 @@ export function DashboardSidebar({ role }: { role: "frontline" | "command" | "be
   }
 
   const config = roleConfig[role]
+
+  const portals = [
+    { id: "frontline", label: "Frontline", href: "/frontline", icon: Activity },
+    { id: "command", label: "Command Center", href: "/command", icon: Building2 },
+    { id: "benefactor", label: "Benefactor", href: "/benefactor", icon: Heart },
+  ]
 
   return (
     <motion.aside
@@ -136,6 +147,68 @@ export function DashboardSidebar({ role }: { role: "frontline" | "command" | "be
           )
         })}
       </nav>
+
+      {/* Portals */}
+      <div className="p-3 border-t border-sidebar-border space-y-1">
+        <div className="px-3 mb-2 flex items-center h-4">
+          {!isCollapsed && <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Portals</span>}
+        </div>
+        {portals.map((portal) => {
+          const Icon = portal.icon
+          const isAllowed = userRole === portal.id
+          const isCurrent = role === portal.id
+
+          if (isAllowed) {
+            return (
+              <Link
+                key={portal.id}
+                href={portal.href}
+                className={cn(
+                  "flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors",
+                  isCurrent ? "bg-sidebar-accent text-foreground" : "hover:bg-sidebar-accent text-muted-foreground hover:text-foreground"
+                )}
+              >
+                <Icon className="w-5 h-5 shrink-0" />
+                <AnimatePresence>
+                  {!isCollapsed && (
+                    <motion.span
+                      initial={{ opacity: 0, x: -10 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      exit={{ opacity: 0, x: -10 }}
+                      className="flex-1 text-sm font-medium"
+                    >
+                      {portal.label}
+                    </motion.span>
+                  )}
+                </AnimatePresence>
+              </Link>
+            )
+          }
+
+          // Locked Portal
+          return (
+            <div
+              key={portal.id}
+              className="flex items-center gap-3 px-3 py-2.5 rounded-lg opacity-50 cursor-not-allowed bg-black/10"
+            >
+              <Icon className="w-5 h-5 shrink-0 text-muted-foreground" />
+              <AnimatePresence>
+                {!isCollapsed && (
+                  <motion.span
+                    initial={{ opacity: 0, x: -10 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, x: -10 }}
+                    className="flex-1 text-sm font-medium text-muted-foreground flex justify-between items-center"
+                  >
+                    {portal.label}
+                    <Lock className="w-4 h-4 ml-2" />
+                  </motion.span>
+                )}
+              </AnimatePresence>
+            </div>
+          )
+        })}
+      </div>
 
       {/* Quick Links */}
       <div className="p-3 border-t border-sidebar-border space-y-1">

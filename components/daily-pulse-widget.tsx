@@ -6,12 +6,13 @@ import { toast } from "sonner"
 import { Activity, Moon, Brain, Check, TrendingUp, TrendingDown, Minus } from "lucide-react"
 import { GlassCard } from "./glass-card"
 import { cn } from "@/lib/utils"
+import { submitDailyPulse } from "@/app/actions"
 
 interface SliderProps {
   label: string
   value: number
   onChange: (value: number) => void
-  icon: React.ElementType
+  icon: React.ElementType<{ className?: string }>
   color: string
   labels: string[]
 }
@@ -146,6 +147,7 @@ export function DailyPulseWidget({ onBurnoutChange }: DailyPulseWidgetProps) {
   const [sleep, setSleep] = useState(3)
   const [submitted, setSubmitted] = useState(false)
   const [burnoutRisk, setBurnoutRisk] = useState(0)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
   const calculateBurnoutRisk = () => {
     // Simple algorithm: invert mood and sleep (higher is better), use stress directly
@@ -157,15 +159,26 @@ export function DailyPulseWidget({ onBurnoutChange }: DailyPulseWidgetProps) {
     return Math.round(risk)
   }
 
-  const handleSubmit = () => {
-    const risk = calculateBurnoutRisk()
-    setBurnoutRisk(risk)
-    setSubmitted(true)
-    onBurnoutChange?.(risk)
-    
-    toast.success("Daily pulse recorded!", {
-      description: `Your burnout risk has been assessed at ${risk}%`
-    })
+  const handleSubmit = async () => {
+    setIsSubmitting(true)
+    try {
+      await submitDailyPulse(mood, stress, sleep)
+      
+      const risk = calculateBurnoutRisk()
+      setBurnoutRisk(risk)
+      setSubmitted(true)
+      onBurnoutChange?.(risk)
+      
+      toast.success("Daily pulse recorded!", {
+        description: `Your burnout risk has been assessed at ${risk}%`
+      })
+    } catch (error) {
+      toast.error("Error submitting", {
+        description: "Please try again later."
+      })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleReset = () => {
@@ -224,10 +237,17 @@ export function DailyPulseWidget({ onBurnoutChange }: DailyPulseWidgetProps) {
 
             <button
               onClick={handleSubmit}
-              className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2"
+              disabled={isSubmitting}
+              className="w-full py-3 rounded-lg bg-primary text-primary-foreground font-semibold hover:opacity-90 transition-opacity flex items-center justify-center gap-2 disabled:opacity-50"
             >
-              <Check className="w-5 h-5" />
-              Submit Check-in
+              {isSubmitting ? (
+                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+              ) : (
+                <>
+                  <Check className="w-5 h-5" />
+                  Submit Check-in
+                </>
+              )}
             </button>
           </motion.div>
         ) : (

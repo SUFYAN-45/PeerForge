@@ -8,6 +8,7 @@ import {
   Lock, Clock, MapPin, Users
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { submitWhistleblowerReport } from "@/app/actions"
 
 interface WhistleblowerModalProps {
   isOpen: boolean
@@ -38,15 +39,22 @@ export function WhistleblowerModal({ isOpen, onClose }: WhistleblowerModalProps)
     }
 
     setIsSubmitting(true)
-    await new Promise(resolve => setTimeout(resolve, 1500))
     
-    toast.success("Report submitted securely", {
-      description: "Your identity is protected. Thank you for speaking up."
-    })
-    
-    setIsSubmitting(false)
-    handleReset()
-    onClose()
+    try {
+      const typeLabel = issueTypes.find(t => t.id === issueType)?.label || issueType
+      await submitWhistleblowerReport(`Type: ${typeLabel}\n\nDescription: ${description}`)
+      
+      toast.success("Report submitted securely", {
+        description: "Your identity is protected. Thank you for speaking up."
+      })
+      
+      handleReset()
+      onClose()
+    } catch (error) {
+      toast.error("Failed to submit report. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   const handleSelfDestruct = () => {

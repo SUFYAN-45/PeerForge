@@ -8,7 +8,7 @@ import {
 } from "lucide-react"
 import { GlassCard } from "@/components/glass-card"
 import { DailyPulseWidget } from "@/components/daily-pulse-widget"
-import { WhistleblowerModal } from "@/components/whistleblower-modal"
+import { WhistleblowerWidget } from "@/components/whistleblower-widget"
 import { SupplyRequestModal } from "@/components/supply-request-modal"
 import { useCrisis } from "@/lib/crisis-context"
 import { cn } from "@/lib/utils"
@@ -39,7 +39,6 @@ const teamMembers = [
 ]
 
 export default function FrontlineDashboard() {
-  const [isWhistleblowerOpen, setIsWhistleblowerOpen] = useState(false)
   const [isSupplyModalOpen, setIsSupplyModalOpen] = useState(false)
   const { setHighBurnout } = useCrisis()
 
@@ -116,8 +115,9 @@ export default function FrontlineDashboard() {
       {/* Main Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Daily Pulse - Takes 2 columns on large screens */}
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-2 space-y-6">
           <DailyPulseWidget onBurnoutChange={handleBurnoutChange} />
+          <WhistleblowerWidget />
         </div>
 
         {/* Quick Actions */}
@@ -289,27 +289,7 @@ export default function FrontlineDashboard() {
         </motion.div>
       </div>
 
-      {/* Whistleblower FAB */}
-      <motion.button
-        initial={{ scale: 0, opacity: 0 }}
-        animate={{ scale: 1, opacity: 1 }}
-        transition={{ delay: 0.5, type: "spring" }}
-        onClick={() => setIsWhistleblowerOpen(true)}
-        className="fixed bottom-6 right-6 w-14 h-14 rounded-full bg-amber-500 text-black 
-          shadow-lg shadow-amber-500/30 hover:bg-amber-400 transition-all
-          flex items-center justify-center group z-30"
-      >
-        <Shield className="w-6 h-6 group-hover:scale-110 transition-transform" />
-        <span className="absolute right-full mr-3 px-3 py-2 bg-black/90 backdrop-blur-sm rounded-lg text-white text-sm whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-          Secure Report
-        </span>
-      </motion.button>
-
       {/* Modals */}
-      <WhistleblowerModal 
-        isOpen={isWhistleblowerOpen} 
-        onClose={() => setIsWhistleblowerOpen(false)} 
-      />
       <SupplyRequestModal 
         isOpen={isSupplyModalOpen} 
         onClose={() => setIsSupplyModalOpen(false)} 

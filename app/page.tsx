@@ -1,14 +1,14 @@
 "use client"
 
-import { useState } from "react"
 import { motion } from "framer-motion"
 import { Activity, Building2, Heart, ArrowRight, Shield, Sparkles, Users, TrendingUp } from "lucide-react"
 import { GlobalMeshBackground } from "@/components/global-mesh-background"
 import { GlassCard } from "@/components/glass-card"
 import { Shield3D } from "@/components/shield-3d"
-import { LoginModal } from "@/components/login-modal"
 import { CrisisProvider, useCrisis } from "@/lib/crisis-context"
 import { cn } from "@/lib/utils"
+import { SignInButton, Show, UserButton } from "@clerk/nextjs"
+import Link from "next/link"
 
 const stats = [
   { label: "Healthcare Workers Protected", value: "12,847", icon: Users },
@@ -18,7 +18,7 @@ const stats = [
 
 const entryCards = [
   {
-    id: "frontline" as const,
+    id: "frontline",
     title: "Healthcare Frontline",
     description: "Nurses, doctors, and medical staff on the front lines",
     icon: Activity,
@@ -26,7 +26,7 @@ const entryCards = [
     features: ["Daily wellness check-ins", "Anonymous reporting", "Supply requests"]
   },
   {
-    id: "command" as const,
+    id: "command",
     title: "Hospital Command",
     description: "Administrators managing resources and coordination",
     icon: Building2,
@@ -34,7 +34,7 @@ const entryCards = [
     features: ["Real-time heatmaps", "Smart resource matching", "KPI analytics"]
   },
   {
-    id: "benefactor" as const,
+    id: "benefactor",
     title: "Donor Network",
     description: "NGOs, donors, and suppliers providing resources",
     icon: Heart,
@@ -44,14 +44,7 @@ const entryCards = [
 ]
 
 function LandingContent() {
-  const [isLoginOpen, setIsLoginOpen] = useState(false)
-  const [selectedRole, setSelectedRole] = useState<"frontline" | "command" | "benefactor" | undefined>()
   const { isHighBurnout } = useCrisis()
-
-  const handleCardClick = (role: "frontline" | "command" | "benefactor") => {
-    setSelectedRole(role)
-    setIsLoginOpen(true)
-  }
 
   return (
     <div className="min-h-screen relative overflow-hidden">
@@ -67,12 +60,26 @@ function LandingContent() {
               </div>
               <span className="font-bold text-xl text-foreground">RescueShield</span>
             </div>
-            <button
-              onClick={() => setIsLoginOpen(true)}
-              className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-foreground font-medium transition-all"
-            >
-              Sign In
-            </button>
+            <div className="flex items-center gap-4">
+              <Show when="signed-in">
+                <Link 
+                  href="/onboarding"
+                  className="px-4 py-2 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/20 text-emerald-400 font-medium transition-all"
+                >
+                  Enter Dashboard
+                </Link>
+                <div className="ml-2 w-8 h-8 rounded-full ring-2 ring-white/10 flex items-center justify-center overflow-hidden">
+                  <UserButton />
+                </div>
+              </Show>
+              <Show when="signed-out">
+                <SignInButton fallbackRedirectUrl="/onboarding" signUpFallbackRedirectUrl="/onboarding">
+                  <button className="px-4 py-2 rounded-lg bg-white/10 hover:bg-white/20 border border-white/20 text-foreground font-medium transition-all">
+                    Sign In
+                  </button>
+                </SignInButton>
+              </Show>
+            </div>
           </nav>
         </div>
       </header>
@@ -159,6 +166,53 @@ function LandingContent() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {entryCards.map((card, index) => {
               const Icon = card.icon
+              
+              const CardContent = (
+                <GlassCard
+                  className={cn(
+                    "h-full cursor-pointer group text-left",
+                    "hover:scale-[1.02] transition-transform duration-300"
+                  )}
+                  glowColor={card.color as "emerald" | "red" | "cyan"}
+                >
+                  <div className={cn(
+                    "w-14 h-14 rounded-xl flex items-center justify-center mb-4",
+                    card.color === "emerald" && "bg-emerald-500/20",
+                    card.color === "cyan" && "bg-cyan-500/20",
+                    card.color === "rose" && "bg-rose-500/20"
+                  )}>
+                    <Icon className={cn(
+                      "w-7 h-7",
+                      card.color === "emerald" && "text-emerald-400",
+                      card.color === "cyan" && "text-cyan-400",
+                      card.color === "rose" && "text-rose-400"
+                    )} />
+                  </div>
+
+                  <h3 className="text-xl font-semibold text-foreground mb-2">{card.title}</h3>
+                  <p className="text-muted-foreground text-sm mb-4">{card.description}</p>
+
+                  <ul className="space-y-2 mb-6">
+                    {card.features.map((feature) => (
+                      <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
+
+                  <div className={cn(
+                    "flex items-center gap-2 font-medium transition-colors",
+                    card.color === "emerald" && "text-emerald-400",
+                    card.color === "cyan" && "text-cyan-400",
+                    card.color === "rose" && "text-rose-400"
+                  )}>
+                    Enter Dashboard
+                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                  </div>
+                </GlassCard>
+              )
+
               return (
                 <motion.div
                   key={card.id}
@@ -166,50 +220,18 @@ function LandingContent() {
                   animate={{ opacity: 1, y: 0 }}
                   transition={{ duration: 0.5, delay: 0.6 + index * 0.1 }}
                 >
-                  <GlassCard
-                    onClick={() => handleCardClick(card.id)}
-                    className={cn(
-                      "h-full cursor-pointer group",
-                      "hover:scale-[1.02] transition-transform duration-300"
-                    )}
-                    glowColor={card.color as "emerald" | "red" | "cyan"}
-                  >
-                    <div className={cn(
-                      "w-14 h-14 rounded-xl flex items-center justify-center mb-4",
-                      card.color === "emerald" && "bg-emerald-500/20",
-                      card.color === "cyan" && "bg-cyan-500/20",
-                      card.color === "rose" && "bg-rose-500/20"
-                    )}>
-                      <Icon className={cn(
-                        "w-7 h-7",
-                        card.color === "emerald" && "text-emerald-400",
-                        card.color === "cyan" && "text-cyan-400",
-                        card.color === "rose" && "text-rose-400"
-                      )} />
-                    </div>
-
-                    <h3 className="text-xl font-semibold text-foreground mb-2">{card.title}</h3>
-                    <p className="text-muted-foreground text-sm mb-4">{card.description}</p>
-
-                    <ul className="space-y-2 mb-6">
-                      {card.features.map((feature) => (
-                        <li key={feature} className="flex items-center gap-2 text-sm text-muted-foreground">
-                          <div className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                          {feature}
-                        </li>
-                      ))}
-                    </ul>
-
-                    <div className={cn(
-                      "flex items-center gap-2 font-medium transition-colors",
-                      card.color === "emerald" && "text-emerald-400",
-                      card.color === "cyan" && "text-cyan-400",
-                      card.color === "rose" && "text-rose-400"
-                    )}>
-                      Enter Dashboard
-                      <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </GlassCard>
+                  <Show when="signed-in">
+                    <Link href="/onboarding" className="block h-full w-full">
+                      {CardContent}
+                    </Link>
+                  </Show>
+                  <Show when="signed-out">
+                    <SignInButton fallbackRedirectUrl="/onboarding" signUpFallbackRedirectUrl="/onboarding">
+                      <button className="block h-full w-full text-left">
+                        {CardContent}
+                      </button>
+                    </SignInButton>
+                  </Show>
                 </motion.div>
               )
             })}
@@ -233,16 +255,6 @@ function LandingContent() {
           </div>
         </div>
       </footer>
-
-      {/* Login Modal */}
-      <LoginModal 
-        isOpen={isLoginOpen} 
-        onClose={() => {
-          setIsLoginOpen(false)
-          setSelectedRole(undefined)
-        }}
-        selectedRole={selectedRole}
-      />
     </div>
   )
 }
