@@ -130,9 +130,7 @@ function MeshNodes({ isHighBurnout, mousePosition }: MeshNodesProps) {
         <bufferGeometry>
           <bufferAttribute
             attach="attributes-position"
-            count={nodeCount}
-            array={positions}
-            itemSize={3}
+            args={[positions, 3]}
           />
         </bufferGeometry>
         <pointsMaterial

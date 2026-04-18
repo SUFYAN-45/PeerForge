@@ -3,7 +3,9 @@ import { Geist, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
 import { Toaster } from 'sonner'
 import { ClerkProvider } from '@clerk/nextjs'
+import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
+import 'leaflet/dist/leaflet.css'
 
 const geistSans = Geist({ 
   subsets: ["latin"],
@@ -51,22 +53,28 @@ export default function RootLayout({
 }>) {
   return (
     <ClerkProvider>
-      <html lang="en" className="bg-background">
+      <html lang="en" suppressHydrationWarning>
         <body className={`${geistSans.variable} ${geistMono.variable} font-sans antialiased min-h-screen`}>
-          {children}
-          <Toaster 
-            position="top-right" 
-            richColors 
-            theme="dark"
-            toastOptions={{
-              style: {
-                background: 'rgba(255,255,255,0.1)',
-                backdropFilter: 'blur(12px)',
-                border: '1px solid rgba(255,255,255,0.2)',
-              }
-            }}
-          />
-          {process.env.NODE_ENV === 'production' && <Analytics />}
+          <ThemeProvider
+            attribute="class"
+            defaultTheme="system"
+            enableSystem
+            disableTransitionOnChange
+          >
+            {children}
+            <Toaster
+              position="top-right"
+              richColors
+              toastOptions={{
+                style: {
+                  background: 'rgba(255,255,255,0.1)',
+                  backdropFilter: 'blur(12px)',
+                  border: '1px solid rgba(255,255,255,0.2)',
+                }
+              }}
+            />
+            {process.env.NODE_ENV === 'production' && <Analytics />}
+          </ThemeProvider>
         </body>
       </html>
     </ClerkProvider>

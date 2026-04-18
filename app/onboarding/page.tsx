@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useTransition } from "react";
 import { useUser } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { Activity, Building2, Heart, ArrowRight } from "lucide-react";
@@ -8,6 +8,8 @@ import { GlassCard } from "@/components/glass-card";
 import { cn } from "@/lib/utils";
 import { GlobalMeshBackground } from "@/components/global-mesh-background";
 import { motion } from "framer-motion";
+import { toast } from "sonner";
+import { setUserRole } from "@/app/actions";
 
 const roles = [
   {
@@ -30,42 +32,51 @@ const roles = [
     description: "NGOs, donors, and suppliers",
     icon: Heart,
     color: "rose",
-  }
-];
+  },
+] as const;
 
 export default function OnboardingPage() {
   const { user, isLoaded } = useUser();
   const router = useRouter();
   const [selectedRole, setSelectedRole] = useState<string | null>(null);
-  const [isUpdating, setIsUpdating] = useState(false);
+  const [isPending, startTransition] = useTransition();
 
   useEffect(() => {
     if (isLoaded && user) {
-      if (user.unsafeMetadata?.role) {
-        router.push(`/${user.unsafeMetadata.role}`);
+      // Check publicMetadata first (new), then fall back to unsafeMetadata (legacy)
+      const role =
+        (user.publicMetadata?.role as string) ||
+        (user.unsafeMetadata?.role as string);
+      if (role) {
+        router.push(`/${role}`);
       }
     } else if (isLoaded && !user) {
       router.push("/");
     }
   }, [isLoaded, user, router]);
 
-  const handleRoleSelect = async (role: string) => {
+  const handleRoleSelect = (role: string) => {
     setSelectedRole(role);
-    setIsUpdating(true);
-    try {
-      await user?.update({
-        unsafeMetadata: { role }
-      });
-      await user?.reload();
-      router.push(`/${role}`);
-    } catch (err) {
-      console.error(err);
-      setIsUpdating(false);
-      setSelectedRole(null);
-    }
+    startTransition(async () => {
+      try {
+        await setUserRole(role as "frontline" | "command" | "benefactor");
+        // Reload user to pick up updated publicMetadata
+        await user?.reload();
+        toast.success(`Role set to ${role}`, {
+          description: "Routing you to your dashboard…",
+        });
+        router.push(`/${role}`);
+      } catch (err) {
+        console.error(err);
+        toast.error("Failed to set role. Please try again.");
+        setSelectedRole(null);
+      }
+    });
   };
 
-  if (!isLoaded || !user || user.unsafeMetadata?.role) {
+  const isUpdating = isPending;
+
+  if (!isLoaded || !user || user.publicMetadata?.role || user.unsafeMetadata?.role) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center flex-col gap-4">
         <div className="w-8 h-8 border-2 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
@@ -77,7 +88,7 @@ export default function OnboardingPage() {
   return (
     <div className="min-h-screen relative overflow-hidden bg-background">
       <GlobalMeshBackground isHighBurnout={false} />
-      
+
       <div className="relative z-10 min-h-screen flex flex-col items-center justify-center p-4">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
@@ -87,15 +98,19 @@ export default function OnboardingPage() {
           <div className="w-16 h-16 rounded-2xl bg-emerald-500/20 flex items-center justify-center mx-auto mb-6">
             <Activity className="w-8 h-8 text-emerald-400" />
           </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">Welcome to RescueShield</h1>
-          <p className="text-lg text-muted-foreground">Please select your operational role to enter Mission Control.</p>
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
+            Welcome to RescueShield
+          </h1>
+          <p className="text-lg text-muted-foreground">
+            Please select your operational role to enter Mission Control.
+          </p>
         </motion.div>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 max-w-5xl mx-auto w-full">
           {roles.map((r, i) => {
             const Icon = r.icon;
             const isSelected = selectedRole === r.id;
-            
+
             return (
               <motion.div
                 key={r.id}
@@ -112,29 +127,39 @@ export default function OnboardingPage() {
                   )}
                   glowColor={r.color as "emerald" | "cyan" | "red"}
                 >
-                  <div className={cn(
-                    "w-12 h-12 rounded-xl flex items-center justify-center mb-6",
-                    r.color === "emerald" && "bg-emerald-500/20",
-                    r.color === "cyan" && "bg-cyan-500/20",
-                    r.color === "rose" && "bg-rose-500/20"
-                  )}>
-                    <Icon className={cn(
-                      "w-6 h-6",
+                  <div
+                    className={cn(
+                      "w-12 h-12 rounded-xl flex items-center justify-center mb-6",
+                      r.color === "emerald" && "bg-emerald-500/20",
+                      r.color === "cyan" && "bg-cyan-500/20",
+                      r.color === "rose" && "bg-rose-500/20"
+                    )}
+                  >
+                    <Icon
+                      className={cn(
+                        "w-6 h-6",
+                        r.color === "emerald" && "text-emerald-400",
+                        r.color === "cyan" && "text-cyan-400",
+                        r.color === "rose" && "text-rose-400"
+                      )}
+                    />
+                  </div>
+
+                  <h3 className="text-xl font-semibold text-foreground mb-2">
+                    {r.title}
+                  </h3>
+                  <p className="text-muted-foreground text-sm mb-6">
+                    {r.description}
+                  </p>
+
+                  <div
+                    className={cn(
+                      "flex items-center gap-2 font-medium transition-colors",
                       r.color === "emerald" && "text-emerald-400",
                       r.color === "cyan" && "text-cyan-400",
                       r.color === "rose" && "text-rose-400"
-                    )} />
-                  </div>
-
-                  <h3 className="text-xl font-semibold text-foreground mb-2">{r.title}</h3>
-                  <p className="text-muted-foreground text-sm mb-6">{r.description}</p>
-
-                  <div className={cn(
-                    "flex items-center gap-2 font-medium transition-colors",
-                    r.color === "emerald" && "text-emerald-400",
-                    r.color === "cyan" && "text-cyan-400",
-                    r.color === "rose" && "text-rose-400"
-                  )}>
+                    )}
+                  >
                     {isSelected ? (
                       <div className="flex items-center gap-2">
                         <div className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
@@ -149,7 +174,7 @@ export default function OnboardingPage() {
                   </div>
                 </GlassCard>
               </motion.div>
-            )
+            );
           })}
         </div>
       </div>

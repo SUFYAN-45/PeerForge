@@ -1,55 +1,57 @@
 @import 'tailwindcss';
 @import 'tw-animate-css';
 
-@custom-variant dark (&:is(.dark *));
+/* Fix: match .dark on the element itself AND its descendants */
+@custom-variant dark (&.dark, &:is(.dark *));
 
-:root {
-  /* Mission Control Dark Theme */
+/* ── Dark theme (default) ─────────────────────────────────────── */
+:root,
+.dark {
   --background: oklch(0.12 0.01 260);
   --foreground: oklch(0.98 0 0);
   --card: oklch(0.16 0.01 260);
   --card-foreground: oklch(0.98 0 0);
   --popover: oklch(0.14 0.01 260);
   --popover-foreground: oklch(0.98 0 0);
-  
-  /* Primary: Emerald for healthy state */
+
+  /* Primary: Emerald */
   --primary: oklch(0.72 0.19 160);
   --primary-foreground: oklch(0.15 0.02 160);
-  
-  /* Secondary: Slate/Steel */
+
+  /* Secondary */
   --secondary: oklch(0.25 0.01 260);
   --secondary-foreground: oklch(0.92 0 0);
-  
+
   /* Muted */
   --muted: oklch(0.22 0.01 260);
   --muted-foreground: oklch(0.65 0 0);
-  
-  /* Accent: Cyan/Teal for highlights */
+
+  /* Accent: Cyan/Teal */
   --accent: oklch(0.75 0.15 195);
   --accent-foreground: oklch(0.15 0.02 195);
-  
-  /* Destructive: Crisis Red */
+
+  /* Destructive */
   --destructive: oklch(0.55 0.22 25);
   --destructive-foreground: oklch(0.98 0 0);
-  
-  /* Crisis mode colors */
+
+  /* Crisis */
   --crisis: oklch(0.60 0.25 25);
   --crisis-foreground: oklch(0.98 0 0);
-  
-  /* Borders and inputs */
+
+  /* Borders */
   --border: oklch(0.30 0.01 260);
   --input: oklch(0.22 0.01 260);
   --ring: oklch(0.72 0.19 160);
-  
-  /* Chart colors */
+
+  /* Chart */
   --chart-1: oklch(0.72 0.19 160);
   --chart-2: oklch(0.75 0.15 195);
   --chart-3: oklch(0.60 0.25 25);
   --chart-4: oklch(0.80 0.16 85);
   --chart-5: oklch(0.65 0.20 300);
-  
+
   --radius: 0.75rem;
-  
+
   /* Sidebar */
   --sidebar: oklch(0.10 0.01 260);
   --sidebar-foreground: oklch(0.92 0 0);
@@ -61,13 +63,70 @@
   --sidebar-ring: oklch(0.72 0.19 160);
 }
 
-/* Crisis mode override */
+/* ── Light theme ──────────────────────────────────────────────── */
+.light {
+  --background: oklch(0.98 0 0);
+  --foreground: oklch(0.12 0.01 260);
+  --card: oklch(0.96 0.005 260);
+  --card-foreground: oklch(0.12 0.01 260);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.12 0.01 260);
+
+  /* Primary: Emerald */
+  --primary: oklch(0.52 0.19 160);
+  --primary-foreground: oklch(0.98 0 0);
+
+  /* Secondary */
+  --secondary: oklch(0.92 0.005 260);
+  --secondary-foreground: oklch(0.20 0.01 260);
+
+  /* Muted */
+  --muted: oklch(0.94 0.005 260);
+  --muted-foreground: oklch(0.45 0.01 260);
+
+  /* Accent */
+  --accent: oklch(0.55 0.15 195);
+  --accent-foreground: oklch(0.98 0 0);
+
+  /* Destructive */
+  --destructive: oklch(0.50 0.22 25);
+  --destructive-foreground: oklch(0.98 0 0);
+
+  /* Crisis */
+  --crisis: oklch(0.52 0.25 25);
+  --crisis-foreground: oklch(0.98 0 0);
+
+  /* Borders */
+  --border: oklch(0.88 0.005 260);
+  --input: oklch(0.92 0.005 260);
+  --ring: oklch(0.52 0.19 160);
+
+  /* Chart */
+  --chart-1: oklch(0.52 0.19 160);
+  --chart-2: oklch(0.55 0.15 195);
+  --chart-3: oklch(0.52 0.25 25);
+  --chart-4: oklch(0.65 0.16 85);
+  --chart-5: oklch(0.55 0.20 300);
+
+  /* Sidebar */
+  --sidebar: oklch(0.94 0.005 260);
+  --sidebar-foreground: oklch(0.12 0.01 260);
+  --sidebar-primary: oklch(0.52 0.19 160);
+  --sidebar-primary-foreground: oklch(0.98 0 0);
+  --sidebar-accent: oklch(0.90 0.005 260);
+  --sidebar-accent-foreground: oklch(0.12 0.01 260);
+  --sidebar-border: oklch(0.85 0.005 260);
+  --sidebar-ring: oklch(0.52 0.19 160);
+}
+
+/* ── Crisis mode override ─────────────────────────────────────── */
 .crisis-mode {
   --primary: oklch(0.60 0.25 25);
   --ring: oklch(0.60 0.25 25);
   --sidebar-primary: oklch(0.60 0.25 25);
 }
 
+/* ── Tailwind theme tokens ────────────────────────────────────── */
 @theme inline {
   --font-sans: 'Geist', 'Geist Fallback', system-ui, sans-serif;
   --font-mono: 'Geist Mono', 'Geist Mono Fallback', monospace;
@@ -120,7 +179,7 @@
   }
 }
 
-/* Glass Card System */
+/* ── Glass card system ────────────────────────────────────────── */
 .glass-card {
   @apply bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl;
 }
@@ -129,7 +188,7 @@
   @apply bg-black/40 backdrop-blur-xl border border-white/10 rounded-xl;
 }
 
-/* Custom scrollbar */
+/* ── Custom scrollbar ─────────────────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
@@ -148,7 +207,7 @@
   background: oklch(0.45 0.01 260);
 }
 
-/* Pulse animation for crisis markers */
+/* ── Animations ───────────────────────────────────────────────── */
 @keyframes crisis-pulse {
   0%, 100% {
     opacity: 1;
@@ -164,7 +223,7 @@
   animation: crisis-pulse 2s ease-in-out infinite;
 }
 
-/* Glow effects */
+/* ── Glow effects ─────────────────────────────────────────────── */
 .glow-emerald {
   box-shadow: 0 0 20px oklch(0.72 0.19 160 / 0.4),
               0 0 40px oklch(0.72 0.19 160 / 0.2);

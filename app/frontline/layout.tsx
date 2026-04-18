@@ -12,7 +12,7 @@ function FrontlineLayoutContent({ children }: { children: ReactNode }) {
     <div className="min-h-screen">
       <GlobalMeshBackground isHighBurnout={isHighBurnout} />
       <DashboardSidebar role="frontline" />
-      <main className="pl-[72px] md:pl-[260px] min-h-screen transition-all duration-300">
+      <main className="pl-0 md:pl-[72px] lg:pl-[260px] pb-16 md:pb-0 min-h-screen transition-all duration-300">
         <div className="p-6 md:p-8">
           {children}
         </div>
