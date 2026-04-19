@@ -7,18 +7,18 @@ import { ThemeProvider } from '@/components/theme-provider'
 import './globals.css'
 import 'leaflet/dist/leaflet.css'
 
-const geistSans = Geist({ 
+const geistSans = Geist({
   subsets: ["latin"],
   variable: "--font-geist-sans"
 })
 
-const geistMono = Geist_Mono({ 
+const geistMono = Geist_Mono({
   subsets: ["latin"],
   variable: "--font-geist-mono"
 })
 
 export const metadata: Metadata = {
-  title: 'RescueShield | Mission Control',
+  title: 'RescueShield',
   description: 'Protecting the Protectors - Healthcare resource coordination and burnout prevention platform',
   generator: 'v0.app',
   icons: {

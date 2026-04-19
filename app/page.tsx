@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils"
 import { SignInButton, Show, UserButton, useUser } from "@clerk/nextjs"
 import { ThemeToggle } from "@/components/theme-toggle"
 import Link from "next/link"
+import Image from "next/image"
 
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
@@ -52,9 +53,9 @@ const portalCards = [
 
 const stats = [
   { value: "12,847", label: "Healthcare Workers", suffix: "+" },
-  { value: "45,231", label: "Resources Matched",  suffix: "+" },
-  { value: "2,156",  label: "Crises Resolved",    suffix: ""  },
-  { value: "98.4",   label: "Match Accuracy",     suffix: "%"  },
+  { value: "45,231", label: "Resources Matched", suffix: "+" },
+  { value: "2,156", label: "Crises Resolved", suffix: "" },
+  { value: "98.4", label: "Match Accuracy", suffix: "%" },
 ]
 
 // ─── Landing content ──────────────────────────────────────────────────────────
@@ -83,8 +84,14 @@ function LandingContent() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           {/* Logo */}
           <Link href="/" className="flex items-center gap-2.5 group">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/20 border border-emerald-500/25 flex items-center justify-center group-hover:bg-emerald-500/30 transition-colors">
-              <Shield className="w-5 h-5 text-emerald-400" />
+            <div className="relative w-12 h-12 shrink-0">
+              <Image
+                src="/logo.png"
+                alt="RescueShield logo"
+                fill
+                className="object-contain drop-shadow-[0_0_6px_rgba(52,211,153,0.35)] group-hover:drop-shadow-[0_0_10px_rgba(52,211,153,0.55)] transition-all duration-300"
+                priority
+              />
             </div>
             <span className="font-bold text-lg text-foreground tracking-tight">RescueShield</span>
           </Link>
@@ -119,8 +126,21 @@ function LandingContent() {
       <section className="relative z-10 pt-20 pb-16 sm:pt-28 sm:pb-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
 
+          {/* Brand Logo */}
+          <motion.div {...fadeUp(0)} className="flex justify-center mb-8">
+            <div className="relative w-64 h-64 drop-shadow-[0_0_32px_rgba(52,211,153,0.45)]">
+              <Image
+                src="/logo.png"
+                alt="RescueShield"
+                fill
+                className="object-contain"
+                priority
+              />
+            </div>
+          </motion.div>
+
           {/* Badge */}
-          <motion.div {...fadeUp(0)} className="flex justify-center mb-6">
+          <motion.div {...fadeUp(0.04)} className="flex justify-center mb-6">
             <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold tracking-wide uppercase">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               Mission Control — Live
@@ -192,8 +212,8 @@ function LandingContent() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {portalCards.map((card, index) => {
               const Icon = card.icon
-              const isLocked  = !!userRole && userRole !== card.id
-              const isDirect  = !!userRole && userRole === card.id
+              const isLocked = !!userRole && userRole !== card.id
+              const isDirect = !!userRole && userRole === card.id
               const isSignedOut = !user
 
               const inner = (
@@ -253,7 +273,7 @@ function LandingContent() {
               )
 
               if (isLocked) return <div key={card.id}>{inner}</div>
-              if (isDirect)  return <Link key={card.id} href={`/${card.id}`} className="block h-full">{inner}</Link>
+              if (isDirect) return <Link key={card.id} href={`/${card.id}`} className="block h-full">{inner}</Link>
               // signed out
               return (
                 <Show key={card.id} when="signed-out">

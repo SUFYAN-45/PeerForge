@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import Link from "next/link"
+import Image from "next/image"
 import { usePathname } from "next/navigation"
 import { useUser } from "@clerk/nextjs"
 import { motion, AnimatePresence } from "framer-motion"
@@ -122,10 +123,18 @@ export function DashboardSidebar({ role }: { role: "frontline" | "command" | "be
         <div className="p-4 border-b border-sidebar-border">
           <Link href="/" className="flex items-center gap-3">
             <div className={cn(
-              "w-10 h-10 rounded-lg flex items-center justify-center shrink-0",
-              isCrisisMode ? "bg-red-500/20" : "bg-emerald-500/20"
+              "relative w-10 h-10 rounded-lg flex items-center justify-center shrink-0 overflow-hidden",
+              isCrisisMode ? "bg-red-500/10" : "bg-emerald-500/10"
             )}>
-              <Shield className={cn("w-5 h-5", isCrisisMode ? "text-red-400" : "text-emerald-400")} />
+              <Image
+                src="/logo.png"
+                alt="RescueShield logo"
+                fill
+                className={cn(
+                  "object-contain p-1 transition-all duration-300",
+                  isCrisisMode && "hue-rotate-[300deg] saturate-150"
+                )}
+              />
             </div>
             <AnimatePresence>
               {!isCollapsed && (
