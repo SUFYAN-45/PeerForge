@@ -21,8 +21,10 @@ export const metadata: Metadata = {
   title: 'RescueShield',
   description: 'Protecting the Protectors - Healthcare resource coordination and burnout prevention platform',
   generator: 'v0.app',
+  manifest: '/manifest.json',
   icons: {
     icon: '/logo.png',
+    shortcut: '/logo.png',
     apple: '/logo.png',
   },
 }
